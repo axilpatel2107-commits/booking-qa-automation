@@ -22,4 +22,12 @@ table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e7ee; }
 td button { margin: 0; padding: 6px 10px; background: #b00020; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-@media (max-width: 560px) { th:nth-child(5), td:nth-child(5) { display: none; } }
+/* Phones: show each booking as a card so nothing gets pushed off-screen. */
+@media (max-width: 560px) {
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  tr { border: 1px solid #d5dae3; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; }
+  td { border: 0; padding: 2px 0; }
+  td[data-label]::before { content: attr(data-label) ": "; font-weight: 600; }
+  td:last-child button { width: 100%; margin-top: 8px; }
+}

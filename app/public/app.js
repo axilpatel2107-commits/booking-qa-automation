@@ -155,8 +155,13 @@ async function loadBookings() {
   const tbody = $('#bookings-table tbody');
   tbody.innerHTML = '';
   for (const b of rows) {
+    // Explicit roles keep table semantics for screen readers when phones restyle it as cards.
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${b.reference}</td><td>${locationNames[b.locationId]}</td><td>${b.date}</td><td>${b.time}</td><td>${b.licenceClass}</td><td></td>`;
+    tr.setAttribute('role', 'row');
+    tr.innerHTML =
+      `<td role="cell" data-label="Reference">${b.reference}</td><td role="cell" data-label="Centre">${locationNames[b.locationId]}</td>` +
+      `<td role="cell" data-label="Date">${b.date}</td><td role="cell" data-label="Time">${b.time}</td>` +
+      `<td role="cell" data-label="Class">${b.licenceClass}</td><td role="cell"></td>`;
     const cancel = document.createElement('button');
     cancel.type = 'button';
     cancel.textContent = 'Cancel';
