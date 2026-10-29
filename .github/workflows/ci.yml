@@ -86,8 +86,14 @@ jobs:
         if: steps.cache-jmeter.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/jmeter
-          curl -sSL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" \
-            | tar -xz -C ~/jmeter --strip-components=1
+          # The CDN is fast but only keeps current releases; the archive is slow but has everything.
+          for url in \
+            "https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" \
+            "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz"; do
+            if curl -fsSL --retry 3 --max-time 600 -o /tmp/jmeter.tgz "$url"; then break; fi
+            echo "Download failed from $url, trying next mirror"
+          done
+          tar -xzf /tmp/jmeter.tgz -C ~/jmeter --strip-components=1
 
       - run: npm ci --omit=dev
 
