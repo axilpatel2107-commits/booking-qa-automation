@@ -109,6 +109,7 @@ specs/                Test plans written by the planner agent
 - **Every API test gets its own fresh user.** No shared state between tests, so they can run in parallel in any order.
 - **Tests clean up after themselves.** A `cleanup` fixture cancels anything a test created, even if the test fails halfway.
 - **Locators use roles and labels,** the same way a screen reader sees the page. That makes them more stable, and if a test can't find a button by its name, a real user with assistive tech probably can't either.
+- **The mobile tests earned their keep on the first CI run.** On a phone-sized screen the Cancel button in My bookings was pushed off the edge of the screen. It passed on my machine because of font differences, and failed on the Linux CI runner. I fixed the layout so bookings show as cards on small screens, and added a regression test that checks the button stays fully on screen.
 - **No hard waits.** Everything waits on a real condition, like the right slot list being rendered. The suite passes 3× in a row with 4 parallel workers (`--repeat-each=3`).
 
 ---
