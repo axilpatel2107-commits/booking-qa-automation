@@ -21,6 +21,22 @@ test.describe('My bookings', () => {
     expect(slots.find((s: { id: string }) => s.id === booking.slotId).available).toBe(true);
   });
 
+  // Regression test: on phones the Cancel button used to be pushed off the right edge of the screen.
+  test('cancel button is fully on screen on small devices @mobile', async ({ page, demoApi, myBookingsPage, cleanup }) => {
+    const booking = await demoApi.bookFreeSlot();
+    cleanup.booking(booking.reference);
+
+    await page.goto('/');
+    await myBookingsPage.open();
+    const button = page.getByRole('button', { name: `Cancel booking ${booking.reference}` });
+    const box = (await button.boundingBox())!;
+    const viewportWidth = page.viewportSize()!.width;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewportWidth);
+    // Nothing else may sit on top of it either.
+    await button.click({ trial: true });
+  });
+
   test('dismissing the cancel dialog keeps the booking', async ({ page, demoApi, myBookingsPage, cleanup }) => {
     const booking = await demoApi.bookFreeSlot();
     cleanup.booking(booking.reference);
