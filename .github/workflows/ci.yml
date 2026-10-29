@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * 1-5' # weekday mornings, catches drift even when nobody pushes
+  workflow_dispatch:
+    inputs:
+      users:
+        description: 'JMeter virtual users'
+        default: '20'
+      duration:
+        description: 'JMeter duration (seconds)'
+        default: '60'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: UI + API tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run tests
+        run: npx playwright test
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload traces and JUnit results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 14
+
+  performance:
+    name: Load test (JMeter)
+    runs-on: ubuntu-latest
+    needs: e2e
+    timeout-minutes: 15
+    env:
+      JMETER_VERSION: '5.6.3'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache JMeter
+        id: cache-jmeter
+        uses: actions/cache@v4
+        with:
+          path: ~/jmeter
+          key: jmeter-${{ env.JMETER_VERSION }}
+
+      - name: Install JMeter
+        if: steps.cache-jmeter.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/jmeter
+          curl -sSL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" \
+            | tar -xz -C ~/jmeter --strip-components=1
+
+      - run: npm ci --omit=dev
+
+      - name: Start the app
+        run: |
+          nohup npm start > app.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health && exit 0; sleep 1; done
+          echo "App did not start"; cat app.log; exit 1
+
+      - name: Run load test and check thresholds
+        env:
+          USERS: ${{ github.event.inputs.users || '20' }}
+          DURATION: ${{ github.event.inputs.duration || '60' }}
+        run: JMETER_HOME="$HOME/jmeter" bash scripts/run-jmeter.sh
+
+      - name: Upload JMeter dashboard
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-report
+          path: |
+            performance/report/
+            performance/results/
+          retention-days: 14
