@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SlotBook – Road Test Booking (demo)</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">SlotBook</span>
+    <nav id="nav" aria-label="Main" hidden>
+      <button type="button" class="link" data-view="book">Book a test</button>
+      <button type="button" class="link" data-view="mine">My bookings</button>
+      <button type="button" class="link" id="sign-out">Sign out</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Login -->
+    <section id="view-login" aria-labelledby="login-title">
+      <h1 id="login-title">Sign in</h1>
+      <form id="login-form" novalidate>
+        <label for="login-email">Email</label>
+        <input id="login-email" name="email" type="email" autocomplete="username">
+        <label for="login-password">Password</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password">
+        <p id="login-error" class="error" role="alert"></p>
+        <button type="submit">Sign in</button>
+      </form>
+      <p class="hint">Demo account: demo@slotbook.test / Demo123!</p>
+    </section>
+
+    <!-- Book -->
+    <section id="view-book" aria-labelledby="book-title" hidden>
+      <h1 id="book-title">Book a road test</h1>
+      <form id="book-form" novalidate>
+        <div class="row">
+          <div>
+            <label for="location">Test centre</label>
+            <select id="location" name="location"></select>
+          </div>
+          <div>
+            <label for="date">Date</label>
+            <input id="date" name="date" type="date">
+          </div>
+          <div>
+            <label for="licence">Licence class</label>
+            <select id="licence" name="licence">
+              <option value="G2">G2</option>
+              <option value="G">G</option>
+              <option value="M2">M2</option>
+              <option value="M">M</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend>Available times</legend>
+          <div id="slots" class="slots" aria-live="polite"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Applicant</legend>
+          <label for="applicant-name">Full name</label>
+          <input id="applicant-name" name="applicantName" autocomplete="name">
+          <label for="applicant-email">Email</label>
+          <input id="applicant-email" name="applicantEmail" type="email" autocomplete="email">
+        </fieldset>
+
+        <p id="book-error" class="error" role="alert"></p>
+        <button type="submit">Confirm booking</button>
+      </form>
+
+      <div id="confirmation" class="confirmation" role="status" hidden>
+        <h2>Booking confirmed</h2>
+        <p>Reference: <strong data-testid="booking-reference"></strong></p>
+        <p data-testid="booking-summary"></p>
+        <button type="button" id="book-another">Book another</button>
+      </div>
+    </section>
+
+    <!-- My bookings -->
+    <section id="view-mine" aria-labelledby="mine-title" hidden>
+      <h1 id="mine-title">My bookings</h1>
+      <p id="no-bookings" hidden>You have no upcoming bookings.</p>
+      <table id="bookings-table" hidden>
+        <caption class="sr-only">Upcoming road tests</caption>
+        <thead>
+          <tr><th scope="col">Reference</th><th scope="col">Centre</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Class</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
